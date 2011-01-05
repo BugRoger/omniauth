@@ -56,20 +56,21 @@ module OmniAuth
 				@ldap_user_info = {}
         (@adaptor.bind unless @adaptor.bound?) rescue puts "failed to bind with the default credentials"          
         @ldap_user_info = @adaptor.search(:filter => Net::LDAP::Filter.eq(@adaptor.uid, @name_proc.call(request.POST['username'])),:limit => 1) if @adaptor.bound?
-        puts @ldap_user_info.to_yaml
 
 				bind_dn = request.POST['username']
 				bind_dn = @ldap_user_info[:dn].to_a.first if @ldap_user_info[:dn]
         @adaptor.bind(:bind_dn => bind_dn, :password => request.POST['password'])
         @ldap_user_info = @adaptor.search(:filter => Net::LDAP::Filter.eq(@adaptor.uid, @name_proc.call(request.POST['username'])),:limit => 1) if @ldap_user_info.empty?
     	  @user_info = self.class.map_user(@@config, @ldap_user_info)
-        puts @ldap_user_info.to_yaml
 
         @env['omniauth.auth'] = auth_hash
 	      @env['PATH_INFO'] = "#{OmniAuth.config.path_prefix}/#{name}/callback"
+
+        puts auth_hash
 	
 	      call_app!
       	rescue Exception => e
+          puts "Exception #{e}"
       	  fail!(:invalid_credentials, e)
       	end
       end      
